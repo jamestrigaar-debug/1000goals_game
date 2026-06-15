@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project 1000: Striker's Legacy</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>Project 1000</h1>
+        <p class="subtitle">Striker's Legacy</p>
+      </div>
+      <div class="top-actions">
+        <button id="saveBtn" class="secondary">Save</button>
+        <button id="newSaveBtn" class="danger">New</button>
+      </div>
+    </header>
+
+    <section id="setupPanel" class="card setup-panel hidden">
+      <h2>Create a New Dynasty</h2>
+      <div class="setup-grid">
+        <label>
+          Player Name
+          <input id="playerNameInput" type="text" maxlength="32" value="Leo Striker" />
+        </label>
+        <label>
+          Nation
+          <select id="nationInput"></select>
+        </label>
+        <label>
+          World Seed
+          <input id="seedInput" type="number" min="1" max="99999999" />
+        </label>
+        <label>
+          Legacy Origin
+          <select id="originInput">
+            <option value="child">Child of a Local Legend</option>
+            <option value="academy">Academy Wonderkid</option>
+            <option value="regen">Regenerated Successor</option>
+          </select>
+        </label>
+        <label>
+          Birth Preset
+          <select id="difficultyInput">
+            <option value="normal">Normal</option>
+            <option value="prodigy">Prodigy</option>
+            <option value="underdog">Underdog</option>
+            <option value="impossible">Impossible</option>
+          </select>
+        </label>
+      </div>
+      <button id="startCareerBtn" class="primary large">Start Career</button>
+    </section>
+
+    <main id="gamePanel" class="game-panel hidden">
+      <section class="content">
+        <div id="home" class="tab-panel active"></div>
+        <div id="matches" class="tab-panel"></div>
+        <div id="player" class="tab-panel"></div>
+        <div id="club" class="tab-panel"></div>
+        <div id="world" class="tab-panel"></div>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Main tabs">
+        <button class="tab active" data-tab="home">Home</button>
+        <button class="tab" data-tab="matches">Matches</button>
+        <button class="tab" data-tab="player">Player</button>
+        <button class="tab" data-tab="club">Club</button>
+        <button class="tab" data-tab="world">World</button>
+      </nav>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
