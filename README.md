@@ -12,6 +12,8 @@ Open `index.html` in any modern browser. No server, build step, package manager,
 - Retro scouting-report presentation inspired by old football annuals, Panini stickers and early management sims
 - Card-based UI for players, clubs and managers with letter grades, muted colours, potential stars, category bars and radar charts
 - Newspaper layer with a changing Football Chronicle headline/ticker
+- Polished small-screen UI with wrapping cards, safe-area bottom navigation and sticky home actions
+- Season Story beats that turn each block into narrative headlines, pressure, rumours and momentum shifts
 - Seeded world generation for clubs, nations, leagues, managers, boards and competitions
 - Club Identity System: stature, fanbase, morale, harmony, board ambition, philosophy and financial archetype
 - Facilities split into training, medical, youth and analytics departments

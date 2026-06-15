@@ -172,6 +172,7 @@ function createNewSave(seed, playerName, nation, origin, previousDynasty, diffic
     player,
     legacy,
     history: [{ text: `World Seed ${seed} / Birth Seed ${player.seedCode} created. ${player.name} is born in ${player.birthRegion}, ${player.nation}, develops at ${club.name}, and starts with an Environment Score of ${player.environmentScore}.`, type: "major" }],
+    storyBeats: [{ text: `${player.name}'s football journey begins at ${club.name}. The local papers call him ${player.bodyType === "Target Forward" ? "a throwback centre-forward" : "one to watch"}.`, type: "major" }],
     transferLog: [],
     matchStories: [],
     lastBlockMatches: [],
@@ -863,6 +864,7 @@ function simulateBlock() {
 
   developPlayer(rng, block);
   processTraits(rng);
+  generateBlockStoryBeat(rng, blockMatches, goals, assists, played, matches, xg);
   if (p.personality?.negatives?.includes("Hothead") && rng() < .035) {
     club.squadHarmony = clamp((club.squadHarmony || 55) - 7, 0, 100);
     p.morale = clamp(p.morale - 6, 1, 99);
@@ -881,6 +883,31 @@ function simulateBlock() {
   render();
 }
 
+function generateBlockStoryBeat(rng, blockMatches, goals, assists, played, matches, xg) {
+  const p = state.player;
+  const club = currentClub();
+  const wins = blockMatches.filter(m => m.outcome === "W").length;
+  const losses = blockMatches.filter(m => m.outcome === "L").length;
+  const big = blockMatches.find(m => m.events?.some(e => e.includes("Man of the Match") || e.includes("Winning")));
+  if (goals >= 5) addStoryBeat(`${p.name} owns the back pages after ${goals} goals in one block. ${club.name} fans start singing his name before kick-off.`, "major");
+  else if (goals === 0 && played >= Math.max(3, matches - 1)) addStoryBeat(`Goal drought watch: ${p.name} works hard but finishes the block without scoring. The Chronicle asks if fatigue is catching up.`, "bad");
+  else if (big) addStoryBeat(`${p.name} delivers the headline moment against ${big.opponent}. Rating ${big.rating}, ${big.events.join(", ")}.`, "good");
+  else if (wins >= matches - 1) addStoryBeat(`${club.name} are rolling. ${wins} wins from ${matches} fixtures and the dressing room mood lifts again.`, "good");
+  else if (losses >= Math.ceil(matches / 2)) addStoryBeat(`Pressure grows at ${club.name}: ${losses} defeats in the block leave the boardroom restless.`, "bad");
+  else if (rng() < .45) {
+    const snippets = [
+      `${club.manager.name} praises ${p.name}'s work without the ball: "The goals will come."`,
+      `Training-ground note: ${p.name} stays late working on ${label(p.trainingFocus)} while younger academy players watch.`,
+      `Supporters debate ${p.name}'s role. Some want him as a pure poacher; others say he is becoming a complete forward.`,
+      `The agent of ${p.name} is spotted at a league match. Nothing official, but the rumour mill starts turning.`,
+      `A local columnist writes that ${p.name}'s season may define ${club.name}'s entire campaign.`
+    ];
+    addStoryBeat(pick(rng, snippets), "");
+  }
+  if (p.fatigue > 72 && rng() < .55) addStoryBeat(`${p.name} looks tired. Fitness staff recommend a rest before the next run of fixtures.`, "bad");
+  if ((p.visibility || 0) > 82 && rng() < .35) addStoryBeat(`National media attention rises. ${p.name} is no longer a local story — scouts from bigger clubs are watching.`, "major");
+}
+
 function poisson(rng, lambda) {
   const L = Math.exp(-lambda);
   let k = 0, p = 1;
@@ -896,7 +923,7 @@ function simulateTeamOnlyMatch(rng, club, opponent) {
 
 function makeMatchStory(club, opponent, result, important = false, rested = false) {
   const outcome = result.teamGoals > result.against ? "W" : result.teamGoals < result.against ? "L" : "D";
-  const comp = important ? pick(() => Math.random(), ["Cup Match", "Big Match", "European Night"]) : "League Match";
+  const comp = important ? ["Cup Match", "Big Match", "European Night"][(state.rngCounter + state.seasonBlock) % 3] : "League Match";
   const events = [];
   for (let i = 0; i < (result.goals || 0); i++) events.push(`⚽ ${14 + i * 27}'`);
   for (let i = 0; i < (result.assists || 0); i++) events.push(`🅰 ${22 + i * 31}'`);
@@ -996,6 +1023,12 @@ function updateStats(stats, matches, goals, assists, rating, boxGoals, headerGoa
 function addHistory(text, type = "") {
   state.history.unshift({ text, type });
   state.history = state.history.slice(0, 180);
+}
+function addStoryBeat(text, type = "") {
+  state.storyBeats ||= [];
+  state.storyBeats.unshift({ text, type, year: state.currentYear, season: state.player?.season, block: state.seasonBlock + 1 });
+  state.storyBeats = state.storyBeats.slice(0, 80);
+  addHistory(text, type);
 }
 function addTransfer(text) {
   state.transferLog.unshift(text);
@@ -1183,6 +1216,7 @@ function endSeason(rng) {
     p.wage = p.contract.wage;
     addHistory(`${p.name} signs a new ${p.contractYears}-year contract at ${currentClub().name}: £${p.wage}k/week (${p.squadStatus}).`, p.wage > oldWage ? "good" : "");
   }
+  generateSeasonReview(rng, seasonGoals, p.currentSeason.assists, avg(p.currentSeason));
   addHistory(`Season complete: ${seasonGoals} goals, ${p.currentSeason.assists} assists, ${avg(p.currentSeason)} average rating.`, seasonGoals >= 30 ? "good" : "");
   p.currentSeason = emptyStats();
 
@@ -1311,18 +1345,34 @@ function weightedPosition(rng) {
 
 function processDynamicWorldEvents(rng) {
   state.world.worldEvents ||= [];
-  if (rng() < .04) {
+  if (rng() < .18) {
     const league = pick(rng, state.world.leagues);
-    const event = pick(rng, ["Financial Collapse", "League Expansion", "Rule Change", "Golden Generation"]);
+    const event = pick(rng, ["Financial Collapse", "League Expansion", "Rule Change", "Golden Generation", "TV Money Boom", "Foreign Talent Wave"]);
     if (event === "Financial Collapse") { league.revenue = clamp(league.revenue - rngInt(rng, 8, 22), 10, 100); league.reputation = clamp(league.reputation - rngInt(rng, 3, 9), 10, 100); }
     if (event === "League Expansion") { league.revenue = clamp(league.revenue + rngInt(rng, 6, 18), 10, 100); }
     if (event === "Rule Change") { league.identity = pick(rng, LEAGUE_IDENTITIES); }
     if (event === "Golden Generation") { league.talentProduction = clamp(league.talentProduction + rngInt(rng, 10, 24), 10, 100); }
+    if (event === "TV Money Boom") { league.revenue = clamp(league.revenue + rngInt(rng, 10, 26), 10, 100); league.reputation = clamp(league.reputation + rngInt(rng, 2, 7), 10, 100); }
+    if (event === "Foreign Talent Wave") { league.reputation = clamp(league.reputation + rngInt(rng, 3, 9), 10, 100); league.talentProduction = clamp(league.talentProduction - rngInt(rng, 1, 5), 10, 100); }
     const text = `${event}: ${league.name} shifts direction. Identity: ${league.identity?.name || "Unknown"}.`;
     state.world.worldEvents.unshift({ year: state.currentYear, text });
     state.world.worldEvents = state.world.worldEvents.slice(0, 40);
     addHistory(text, "major");
   }
+}
+
+function generateSeasonReview(rng, goals, assists, rating) {
+  const p = state.player;
+  const club = currentClub();
+  let title;
+  if (goals >= 45) title = `${p.name.toUpperCase()} WRITES A MONSTER SEASON`;
+  else if (goals >= 30) title = `${p.name.toUpperCase()} BECOMES THE STORY OF ${state.currentYear}`;
+  else if (goals >= 15) title = `${p.name.toUpperCase()} TAKES ANOTHER STEP`;
+  else title = `${p.name.toUpperCase()} FACES QUESTIONS AFTER QUIET YEAR`;
+  const detail = `${title}: ${goals} goals, ${assists} assists, ${rating} average rating at ${club.name}. ${p.injuryHistory?.some(i => i.year === state.currentYear) ? "Injuries shaped the campaign." : "Availability kept the season moving."}`;
+  addStoryBeat(detail, goals >= 30 ? "major" : goals < 12 ? "bad" : "");
+  if (club.board?.expectationProgress?.pressure > 15) addStoryBeat(`Boardroom tension remains at ${club.name}. The manager enters next season under pressure.`, "bad");
+  if (p.stats.goals > 0 && p.stats.goals % 100 < goals) addStoryBeat(`Milestone watch: ${p.name} passes ${Math.floor(p.stats.goals / 100) * 100} career goals. The road to 1000 feels a little less impossible.`, "major");
 }
 
 function updateClubEconomies(rng) {
@@ -1943,7 +1993,13 @@ function renderHome() {
       <p class="muted">${club.manager?.playStyle || "Balanced"} • ${tacticalRoleName(p.tacticalRole)} • ${p.squadStatus}</p>
       <div class="fixture"><span>Next Fixture</span><strong>vs ${nextFixture()}</strong></div>
     </section>
-    ${p.retired ? `<button class="primary sim-button" onclick="startNewCareer('regen')">▶ START NEW CAREER</button>` : `<button class="primary sim-button" onclick="simulateBlock()">▶ SIM NEXT BLOCK</button><button class="secondary sim-button" onclick="restBlock()">REST / RECOVER</button>`}
+    <section class="card panel">
+      <div class="kicker">Season Story</div>
+      <p>${escapeHtml(state.storyBeats?.[0]?.text || "The season is waiting for its first headline.")}</p>
+    </section>
+    <section class="home-actions">
+      ${p.retired ? `<button class="primary sim-button" onclick="startNewCareer('regen')">▶ START NEW CAREER</button>` : `<button class="primary sim-button" onclick="simulateBlock()">▶ SIM NEXT BLOCK</button><button class="secondary sim-button" onclick="restBlock()">REST / RECOVER</button>`}
+    </section>
   `;
 }
 
@@ -1955,6 +2011,7 @@ function renderMatches() {
       <p class="muted">Season ${state.player.season}, block ${state.seasonBlock + 1}/6. Sim a block to see every fixture.</p>
       <button class="primary sim-button" onclick="simulateBlock()">▶ SIM BLOCK</button>
     </section>
+    <section class="card panel"><h2>Season Story</h2><div class="log">${(state.storyBeats || []).slice(0, 4).map(s => `<div class="log-item ${s.type || ""}">${escapeHtml(s.text)}</div>`).join("") || `<p class="muted">No story beats yet.</p>`}</div></section>
     <section class="match-list">
       ${matches.slice(0, 8).map(m => `<div class="match-card">
         <div class="match-head"><span>${m.outcome} ${m.score} vs ${escapeHtml(m.opponent)}</span><span>${m.competition}</span></div>
@@ -2003,9 +2060,10 @@ function renderClubMobile() {
 
 function renderWorldMobile() {
   const headlines = [
-    ...(state.history || []).slice(0, 8).map(h => typeof h === "string" ? h : h.text),
+    ...(state.storyBeats || []).slice(0, 6).map(h => h.text),
+    ...(state.history || []).slice(0, 6).map(h => typeof h === "string" ? h : h.text),
     ...(state.world.worldEvents || []).slice(0, 4).map(e => e.text)
-  ].slice(0, 10);
+  ].filter(Boolean).slice(0, 12);
   document.getElementById("world").innerHTML = `
     <section class="card panel"><h2>Headlines</h2><div class="log">${headlines.map(h => `<div class="headline">${escapeHtml(h)}</div>`).join("") || `<p class="muted">No headlines yet.</p>`}</div></section>
     <section class="card panel"><h2>Wonderkids</h2><div class="card-grid">${(state.world.youthPool || []).slice(0, 4).map(y => renderPlayerCard(npcToCardPlayer(y), { note: `${state.world.clubs.find(c => c.id === y.clubId)?.name || y.nation}` })).join("")}</div></section>
@@ -2104,6 +2162,7 @@ function migrateV2ToV3(save) {
 }
 function migrateV3ToV4(save) {
   save.version = 4;
+  save.storyBeats ||= [];
   save.matchStories ||= [];
   save.lastBlockMatches ||= [];
   save.legacy ||= {};
@@ -2208,6 +2267,7 @@ function migrateSave(save) {
   save.legacy ||= { generation: 1, fragments: 0, totalGoals: 0, bestCareerGoals: 0, unlockedBonuses: [], geneticMemory: null, lineage: [] };
   save.legacy.geneticMemory ||= null;
   save.rivals ||= [];
+  save.storyBeats ||= [];
   save.transferLog ||= [];
   save.matchStories ||= [];
   save.lastBlockMatches ||= [];
