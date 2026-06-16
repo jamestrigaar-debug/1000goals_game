@@ -20,37 +20,13 @@
     </header>
 
     <section id="setupPanel" class="card setup-panel hidden">
-      <h2>Create a New Dynasty</h2>
+      <h2>Create a New Career</h2>
       <div class="setup-grid">
-        <label>
-          Player Name
-          <input id="playerNameInput" type="text" maxlength="32" value="Leo Striker" />
-        </label>
-        <label>
-          Nation
-          <select id="nationInput"></select>
-        </label>
-        <label>
-          World Seed
-          <input id="seedInput" type="number" min="1" max="99999999" />
-        </label>
-        <label>
-          Legacy Origin
-          <select id="originInput">
-            <option value="child">Child of a Local Legend</option>
-            <option value="academy">Academy Wonderkid</option>
-            <option value="regen">Regenerated Successor</option>
-          </select>
-        </label>
-        <label>
-          Birth Preset
-          <select id="difficultyInput">
-            <option value="normal">Normal</option>
-            <option value="prodigy">Prodigy</option>
-            <option value="underdog">Underdog</option>
-            <option value="impossible">Impossible</option>
-          </select>
-        </label>
+        <label>Player Name<input id="playerNameInput" type="text" maxlength="32" value="Leo Striker" /></label>
+        <label>Nation<select id="nationInput"></select></label>
+        <label>World Seed<input id="seedInput" type="number" min="1" max="99999999" /></label>
+        <label>Origin<select id="originInput"><option value="child">Local Legacy</option><option value="academy">Academy Wonderkid</option><option value="regen">Regenerated Career</option></select></label>
+        <label>Birth Preset<select id="difficultyInput"><option value="normal">Normal</option><option value="prodigy">Prodigy</option><option value="underdog">Underdog</option><option value="impossible">Impossible</option></select></label>
       </div>
       <button id="startCareerBtn" class="primary large">Start Career</button>
     </section>
@@ -59,16 +35,16 @@
       <section class="content">
         <div id="home" class="tab-panel active"></div>
         <div id="matches" class="tab-panel"></div>
-        <div id="player" class="tab-panel"></div>
-        <div id="club" class="tab-panel"></div>
+        <div id="career" class="tab-panel"></div>
+        <div id="league" class="tab-panel"></div>
         <div id="world" class="tab-panel"></div>
       </section>
 
       <nav class="bottom-nav" aria-label="Main tabs">
         <button class="tab active" data-tab="home">Home</button>
         <button class="tab" data-tab="matches">Matches</button>
-        <button class="tab" data-tab="player">Player</button>
-        <button class="tab" data-tab="club">Club</button>
+        <button class="tab" data-tab="career">Career</button>
+        <button class="tab" data-tab="league">League</button>
         <button class="tab" data-tab="world">World</button>
       </nav>
     </main>

@@ -8,7 +8,7 @@ Open `index.html` in any modern browser. No server, build step, package manager,
 
 ## Implemented in this framework
 
-- Mobile-first single-screen layout with bottom navigation: Home, Matches, Player, Club, World
+- Mobile-first single-screen layout with bottom navigation: Home, Matches, Career, League, World
 - Retro scouting-report presentation inspired by old football annuals, Panini stickers and early management sims
 - Card-based UI for players, clubs and managers with letter grades, muted colours, potential stars, category bars and radar charts
 - Newspaper layer with a changing Football Chronicle headline/ticker
@@ -20,6 +20,7 @@ Open `index.html` in any modern browser. No server, build step, package manager,
 - Club finance model with revenue, wages, facilities/youth costs, player sales and financial trouble
 - Dynamic manager profiles with ratings, traits, play styles and a moving manager market
 - Board expectations with goals such as avoiding relegation, qualifying for Europe, winning leagues, developing youth and reducing wage bills
+- Interactive contract and transfer-window decisions: accept, counter, reject, ask agent to negotiate and accept/reject moves
 - Contract pressure: wages, years remaining, release clauses, squad status and bonuses drive transfer logic
 - Scouting and visibility: league reputation, club stature, agent quality, international caps and performances determine who notices the player
 - Fitness, sharpness and fatigue create pressure from heavy match loads and high-press systems, including an optional rest/recovery block decision
@@ -31,7 +32,9 @@ Open `index.html` in any modern browser. No server, build step, package manager,
 - Formalized player schema with id, birth year, primary/secondary positions, derived overall/potential and category ratings
 - Teen striker creation with visible attributes, personality layer and hidden DNA values
 - Six-block career simulation loop with one-tap block simulation
-- Match-story output showing every fixture in the block, rating, goals, assists and big moments
+- Match-story output showing every fixture in the block, matchday, rating, goals, assists and big moments
+- League table tab showing position, points and goal difference after every block
+- Career timeline tab tracking debuts, transfers, trophies, awards and milestones
 - Poisson/xG scoreline generation using club attack vs opponent defence
 - Markov-chain match flow: possession, build-up, final third, chance, shot and goal
 - Weighted player influence from ability, form, confidence, momentum and traits
